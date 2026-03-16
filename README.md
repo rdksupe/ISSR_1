@@ -1,11 +1,89 @@
 # Team communication processing and analysis in human-factors simulated environment
 
-This project provides a modular, plugin-based pipeline for enhancing and benchmarking noisy historical audio, specifically the **Apollo 13 Flight Director Loop**. It evaluates classical DSP, unsupervised ML, and state-of-the-art AI denoising methods against speech recognition (ASR) performance.
-
 ## Overview
 
-The pipeline extracts a segment of audio, applies a battery of denoising "plugins", and performs a comparative analysis using Signal-to-Noise Ratio (SNR) metrics and Whisper ASR Word Error Rate (WER) against ground-truth subtitles.
+The primary task involved the selection of a relevant dataset that closely mimics real-world team communication, as demonstrated in the audio sample provided in the task document (which featured multiple people in a driving simulator). To achieve this, I researched datasets of situations that natively involve such communication and evaluated multiple data sources.
 
+Initially, there were obvious candidates, such as the AMI corpus and other meeting-based datasets. However, these datasets suffered primarily from the issue that they did not represent true high-stakes team communication. They consisted of bi-directional human communication in a linear manner, lacking the chaos, real-time planning, and stakes inherent in simulated or operational environments. Therefore, I chose to avoid these datasets and concentrated my efforts on finding environments involving naturally high-stakes audio.
+
+I then explored esports datasets (such as those for Fortnite), which involve intense player and team communication. Despite finding a couple of relevant research papers, the underlying data was either recorded individually for each player rather than as a unified team stream, or it was not publicly available. I also evaluated a Minecraft-based search-and-rescue dataset and various military communication databases, but these led to similar pitfalls—they were either restricted from public access or too niche for this specific use case.
+
+Finally, I realized that space-based missions involve intense, high-stakes planning and communication, with the critical advantage of being strictly within the public domain. This led me to the [Apollo in Real Time](https://apolloinrealtime.org/) project, which has digitized and made available the entire mission audio for public consumption via YouTube and the [Internet Archive](https://archive.org/). Consequently, I settled on a recording section from the Apollo 13 mission—specifically the period where the spacecraft suffered an oxygen tank failure, leaving the crew stranded in space and forcing the mission control team to work collaboratively under extreme pressure to bring them back safely.
+
+## Data Resource: Apollo 13 Flight Director Loop
+
+### 1. Database Identification
+
+**Source**: Apollo 13 Flight Director Loop — Mission Control audio during the oxygen tank failure and subsequent crisis response.
+
+**Specific Recording**: The recording captures the White Team shift led by Flight Director Gene Kranz, beginning approximately 8.5 minutes before the accident (from the end of the last TV transmission from Apollo 13) through the critical hours of the emergency response.
+
+**Origin**: Audio sourced from the [NASA Apollo 13 Flight Director Loop recording on YouTube](https://www.youtube.com/watch?v=KWfnY9cRXO4).
+
+**Archive Context**: This recording is part of a larger collection of approximately 7,200 hours of Apollo 13 Mission Control audio, originally recorded on 30-track analog tapes. These tapes were discovered in the National Archives and digitized by NASA's Johnson Space Center in early 2020, with restoration and public access facilitated by the [Apollo in Real Time](https://apolloinrealtime.org/13/) project.
+
+**File**: `audio.m4a` — ~4858 seconds (~80 minutes) of Flight Director loop audio, resampled to 16 kHz mono for processing.
+
+### 2. How Will This Data Be Used?
+
+This audio serves as the **primary test bed for developing and benchmarking audio enhancement algorithms** aimed at improving team communication clarity. Specifically:
+
+#### Enhancement Development
+
+* **Noise reduction benchmarking**: The recording is processed through multiple denoising algorithms (Wiener filter, spectral gating, NMF-based source separation) to evaluate which methods best improve speech clarity in real-world team communication audio.
+* **Parameter tuning**: The diverse noise characteristics allow tuning enhancement parameters across different noise conditions (static noise, cross-talk, equipment hum, voice-operated-exchange clipping).
+
+#### Transcription Improvement
+
+* **ASR baseline**: The noisy original is transcribed using OpenAI Whisper to establish a baseline word recognition quality.
+* **Enhancement validation**: Each denoised version is also transcribed to quantitatively measure whether noise reduction translates to improved automatic speech recognition—the key metric for downstream use in team communication analysis.
+
+#### Analysis Pipeline
+
+A 3–5 minute sample is extracted and processed through the full pipeline:
+
+1. **Audio Enhancement** (`audio_enhancement.py`) — Applies denoising methods and saves enhanced audio files.
+2. **Comparative Analysis** (`audio_analysis.py`) — Computes SNR metrics, generates waveform/spectrogram visualizations, runs Whisper ASR on all versions, and produces a comparison report.
+
+### 3. Why Is This Data the Best Option?
+
+#### Authentic Multi-Speaker Team Communication
+
+The Flight Director loop captures **genuine high-stakes team communication**—multiple flight controllers communicating simultaneously across dedicated loops (EECOM, GNC, CAPCOM, Flight Director). This mirrors the multi-speaker, multi-channel nature of modern team communication environments.
+
+#### Representative Noise Characteristics
+
+The recording contains the same categories of noise found in real-world team communication systems:
+
+| Noise Type | Source | Relevance to Modern Teams |
+| --- | --- | --- |
+| **Background hiss/buzz** | Analog recording equipment, thermal noise | Comparable to poor microphone quality, HVAC noise |
+| **Earth-based RF interference** | Antenna station noise | Similar to wireless microphone interference |
+| **Voice-Operated Exchange (VOX) clipping** | Squelch circuitry cutting speech onset/offset | Mirrors push-to-talk artifacts in radio/VoIP systems |
+| **Cross-talk & bleed** | Multiple adjacent audio loops | Equivalent to open-office crosstalk, speakerphone echo |
+| **Ranging tone interference** | Shared voice/data channel | Analogous to notification sounds during calls |
+
+#### Publicly Accessible
+
+The recording is freely available through YouTube, NASA archives, and the Internet Archive. There are no licensing restrictions, institutional access barriers, or data privacy concerns, making the work fully reproducible.
+
+#### Prior ASR Benchmarks Exist
+
+The "Apollo in Real Time" project processed 7,200 hours using OpenAI Whisper, generating 2.9 million utterances. This provides a **known difficulty baseline**; the audio is challenging enough that the project acknowledged transcriptions are "imperfect" and require improvements with future ASR models.
+
+#### Extended Duration for Scale Testing
+
+At ~80 minutes, the recording is long enough to:
+
+* Extract multiple 3–5 minute test samples from different segments (quiet periods, intense crosstalk, equipment noise).
+* Test algorithm performance consistency across varying noise conditions.
+* Validate that enhancement methods do not degrade over time, which is critical for batch processing.
+
+#### Historical & Domain Significance
+
+The Apollo 13 crisis is one of the most rigorously documented team communication events in history. Flight Director Gene Kranz's team demonstrated extraordinary communication discipline under extreme pressure. Studying the audio characteristics of this communication provides robust technical and domain-relevant insights for human-factors research.
+
+---
 ### System Workflow
 
 ```mermaid
@@ -66,69 +144,7 @@ Choose one of the following methods to set up your environment:
 
 ---
 
-## Data Resource: Apollo 13 Flight Director Loop
 
-### 1. Database Identification
-
-**Source**: Apollo 13 Flight Director Loop — Mission Control audio during the oxygen tank failure and subsequent crisis response.
-
-**Specific Recording**: The recording captures the White Team shift led by Flight Director Gene Kranz, beginning approximately 8.5 minutes before the accident (from the end of the last TV transmission from Apollo 13) through the critical hours of the emergency response.
-
-**Origin**: Audio sourced from the [NASA Apollo 13 Flight Director Loop recording on YouTube](https://www.youtube.com/watch?v=KWfnY9cRXO4).
-
-**Archive Context**: This recording is part of a larger collection of approximately 7,200 hours of Apollo 13 Mission Control audio, originally recorded on 30-track analog tapes. These tapes were discovered in the National Archives and digitized by NASA's Johnson Space Center in early 2020, with restoration and public access facilitated by the "Apollo in Real Time" project (apolloinrealtime.org).
-
-**File**: `audio.m4a` — ~4858 seconds (~80 minutes) of Flight Director loop audio, resampled to 16 kHz mono for processing.
-
-### 2. How Will This Data Be Used?
-
-This audio serves as the **primary test bed for developing and benchmarking audio enhancement algorithms** aimed at improving team communication clarity. Specifically:
-
-#### Enhancement Development
-- **Noise reduction benchmarking**: The recording is processed through multiple denoising algorithms (Wiener filter, spectral gating, NMF-based source separation) to evaluate which methods best improve speech clarity in real-world team communication audio.
-- **Parameter tuning**: The diverse noise characteristics allow tuning enhancement parameters across different noise conditions (static noise, cross-talk, equipment hum, voice-operated-exchange clipping).
-
-#### Transcription Improvement
-- **ASR baseline**: The noisy original is transcribed using OpenAI Whisper to establish a baseline word recognition quality.
-- **Enhancement validation**: Each denoised version is also transcribed to quantitatively measure whether noise reduction translates to improved automatic speech recognition — the key metric for downstream use in team communication analysis.
-
-#### Analysis Pipeline
-A 3–5 minute sample is extracted and processed through the full pipeline:
-1. **Audio Enhancement** (`audio_enhancement.py`) — Applies denoising methods and saves enhanced audio files
-2. **Comparative Analysis** (`audio_analysis.py`) — Computes SNR metrics, generates waveform/spectrogram visualizations, runs Whisper ASR on all versions, and produces a comparison report
-
-### 3. Why Is This Data the Best Option?
-
-#### Authentic Multi-Speaker Team Communication
-The Flight Director loop captures **genuine high-stakes team communication** — multiple flight controllers communicating simultaneously across dedicated loops (EECOM, GNC, CAPCOM, Flight Director). This mirrors the multi-speaker, multi-channel nature of modern team communication environments.
-
-#### Representative Noise Characteristics
-The recording contains the same categories of noise found in real-world team communication systems:
-
-| Noise Type | Source | Relevance to Modern Teams |
-|---|---|---|
-| Background hiss/buzz | Analog recording equipment, thermal noise | Comparable to poor microphone quality, HVAC noise |
-| Earth-based RF interference | Antenna station noise | Similar to wireless microphone interference |
-| Voice-Operated Exchange (VOX) clipping | Squelch circuitry cutting speech onset/offset | Mirrors push-to-talk artifacts in radio/VoIP systems |
-| Cross-talk & bleed | Multiple adjacent audio loops | Equivalent to open-office crosstalk, speakerphone echo |
-| Ranging tone interference | Shared voice/data channel | Analogous to notification sounds during calls |
-
-#### Publicly Accessible
-The recording is freely available through YouTube, NASA archives, and the Internet Archive — no licensing restrictions, institutional access, or data privacy concerns. This makes the work fully reproducible.
-
-#### Prior ASR Benchmarks Exist
-The "Apollo in Real Time" project processed 7,200 hours using OpenAI Whisper, generating 2.9 million utterances. This provides a **known difficulty baseline** — the audio is challenging enough that the project acknowledged transcriptions are "imperfect" and plan improvements with future ASR models.
-
-#### Extended Duration for Scale Testing
-At ~80 minutes, the recording is long enough to:
-- Extract multiple 3–5 minute test samples from different segments (quiet periods, intense crosstalk, equipment noise)
-- Test algorithm performance consistency across varying noise conditions
-- Validate that enhancement methods don't degrade over time (important for batch processing)
-
-#### Historical & Domain Significance
-The Apollo 13 crisis is one of the most documented team communication events in history. Flight Director Gene Kranz's team demonstrated extraordinary communication discipline under extreme pressure. Studying the audio characteristics of this communication provides both technical and domain-relevant insights for communication research.
-
----
 
 ## Enhancement Methods (Plugins)
 
@@ -177,6 +193,19 @@ The following results compare the methods against the original noisy audio (`25.
 | **Spectral Gate** | 387 | 46.72% |
 | **Meta Denoise** | 360 | 37.88% |
 | **audio-denoiser** | 419 | 36.62% |
+| **DeepFilterNet3** | 425 | 35.80% |
+
+### 3. Detailed ASR Comparison Report
+A comprehensive report is automatically generated at `analysis_results/asr_comparison.txt`. This report includes detailed metrics, Word Error Rate (WER) scores, processing times, and transcription excerpts for all methods.
+
+#### Summary Table (from `asr_comparison.txt`)
+| Method | Words | Δ Words | Time (s) | WER (%) |
+|---|---|---|---|---|
+| **Original (Noisy)** | 408 | +0 | 14.5 | 34.09% |
+| **Wiener** | 392 | -16 | 19.3 | 48.99% |
+| **Spectral Gate** | 387 | -21 | 23.7 | 46.72% |
+| **Meta Denoise** | 360 | -48 | 11.4 | 37.88% |
+| **audio-denoiser** | 419 | +11 | 12.0 | 36.62% |
 
 ---
 
@@ -256,11 +285,18 @@ uv run audio_analysis.py --whisper-model small
 
 The following Jupyter notebooks provide a step-by-step walkthrough of the project objectives:
 
-- `01_dataset_exploration.ipynb`: **Data resource selection and sample evaluation.** This notebook covers database identification (Apollo 13), exploratory data analysis (EDA) of the audio samples, and justification for the dataset choice.
+- `01_daktaset_exploration.ipynb`: **Data resource selection and sample evaluation.** This notebook covers database identification (Apollo 13), exploratory data analysis (EDA) of the audio samples, and justification for the dataset choice.
 - `02_audio_enhancement_end_to_end_analysis.ipynb`: **Audio enhancement algorithm and method evaluation.** This notebook demonstrates the end-to-end pipeline: extracting audio, applying multiple enhancement methods (Classical, ML, AI), and performing quantitative (SNR, WER) and qualitative (Spectrograms) analysis.
 
 ## Project Structure
 - `audio_enhancement.py`: Orchestrator for the plugin system.
 - `audio_analysis.py`: Main benchmarking script (SNR, ASR, Plots).
 - `denoisers/`: Directory containing all modular enhancement plugins.
-- `analysis_results/`: Generated reports, CSVs, and PNGs.
+- `enhanced_outputs/`: Contains the processed audio files.
+  - `00_original.wav`: Peak-normalized original segment for baseline.
+  - `{index}_{method}.wav`: Enhanced output from each specific plugin (e.g., `01_wiener.wav`, `04_meta_denoise.wav`).
+- `analysis_results/`: Generated reports and visualizations.
+  - `asr_comparison.txt`: **The detailed comparison report** containing WER and transcription excerpts.
+  - `enhancement_summary.csv`: Tabular SNR and quality metrics.
+  - `spectrogram_comparison.png` & `waveform_comparison.png`: Visual evaluation of all methods.
+  - `transcriptions/`: Individual text files for each method's output.
