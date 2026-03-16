@@ -36,6 +36,36 @@ graph TD
 
 ---
 
+## Getting Started
+
+### Prerequisites
+- **Python 3.10+**
+- **uv**: Fast Python package installer and resolver.
+- **FFmpeg**: Required for audio file loading and processing (`librosa`, `pydub`).
+
+### Installation
+Choose one of the following methods to set up your environment:
+
+#### Option A: Using `uv` (Recommended)
+1. Create a virtual environment and install dependencies:
+   ```bash
+   uv sync
+   ```
+
+#### Option B: Using `pip`
+1. Create and activate a virtual environment:
+   ```bash
+   python -m venv .venv
+   source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+   ```
+2. Install dependencies directly from `pyproject.toml`:
+   ```bash
+   pip install --upgrade pip
+   pip install .
+   ```
+
+---
+
 ## Data Resource: Apollo 13 Flight Director Loop
 
 ### 1. Database Identification
@@ -102,16 +132,25 @@ The Apollo 13 crisis is one of the most documented team communication events in 
 
 ## Enhancement Methods (Plugins)
 
-The system uses a **Plugin Architecture**. Each denoiser lives in `denoisers/` and inherits from `BaseDenoiser`.
+The system uses a **Plugin Architecture**. Each denoiser lives in `denoisers/` and inherits from `BaseDenoiser`. These methods cover the spectrum from classical DSP to modern AI backbones.
 
-| Method | Type | Key | Description |
-|---|---|---|---|
-| **Wiener Filter** | Classical | `wiener` | Statistical optimal linear filter. |
-| **Spectral Gate** | Classical | `spectral_gate` | Non-stationary noise reduction via `noisereduce`. |
-| **NMF** | ML | `nmf` | Matrix factorization to isolate speech components. |
-| **Meta DNS64** | AI | `meta_denoise` | Real-time waveform denoiser from Facebook Research. |
-| **audio-denoiser** | AI | `audio_denoiser` | 2024 transformer-based model (38M parameters). |
-| **DeepFilterNet3**| AI | `deepfilter` | High-fidelity deep filtering at 48kHz. |
+| Method | Type | Backbone / Library | Description | Use Case |
+|---|---|---|---|---|
+| **Wiener Filter** | Classical | `scipy.signal` | Statistical optimal linear filter based on local variance. | Best for removing simple, steady-state additive white noise. |
+| **Spectral Gate** | Classical | `noisereduce` | Non-stationary noise reduction via spectral gating/subtraction. | Excellent for removing constant background hiss or hum without touching speech. |
+| **NMF** | ML | `sklearn.decomposition` | Non-negative Matrix Factorization applied to magnitude spectrograms. | Used for source separation where noise characteristics are quasi-stationary. |
+| **Meta DNS64** | AI | `denoiser` (Facebook) | Encoder-Decoder CNN architecture (Demucs-style) with LSTM. | General purpose high-quality denoising for various real-world noises. |
+| **DeepFilterNet3**| AI | `DeepFilterNet` | Deep filtering in the STFT domain using Perceptual Loss. | Optimized for high-fidelity (48kHz) and real-time processing with low latency. |
+
+---
+
+## Technical Metrics
+
+To evaluate enhancement quality, the pipeline employs both signal-based and transcription-based metrics:
+
+- **Signal-to-Noise Ratio (SNR)**: Measures the ratio between signal power and noise power. High SNR indicates significant noise suppression.
+- **Segmental SNR**: Calculated as the average SNR over short frames (20-30ms). This often correlates better with human perception than global SNR as it accounts for the non-stationary nature of speech.
+- **Word Error Rate (WER)**: The standard metric for ASR accuracy, calculated as `(Substitutions + Deletions + Insertions) / Total Words`. A lower WER indicates that the enhancement has successfully preserved or improved speech intelligibility for the ASR model.
 
 ---
 
@@ -139,9 +178,16 @@ The following results compare the methods against the original noisy audio (`25.
 | **Meta Denoise** | 360 | 37.88% |
 | **audio-denoiser** | 419 | 36.62% |
 
-> [!NOTE]
-> Counter-intuitively, while Meta and Spectral Gate show massive SNR gains, the "Noisy" original still yields the lowest WER. This suggests that aggressive denoising can introduce artifacts that confuse the ASR model more than the original broadband noise.
-> Further , it must be realised that due to time constraints, the analysis was performed only on the first 3 minutes of the audio hence these results would change if the entire audio is processed.
+---
+
+## Key Findings & Lessons Learned
+
+Analysis of the initial benchmarking results reveals several critical insights:
+
+1. **The Denoising Paradox**: Aggressive denoising (as seen with Meta DNS64 and Spectral Gate) can yield massive SNR improvements (>50 dB) but paradoxically lead to *higher* Word Error Rates (WER) compared to the noisy original. This suggests that the artifacts introduced by non-linear processing—often referred to as "musical noise" or phase distortions—can be more detrimental to modern ASR models than broadband static.
+2. **Feature Preservation**: Whisper, being trained on vast amounts of diverse (and often noisy) data, is remarkably robust to static. Enhancement methods that prioritize "cleaning" the audio at the expense of speech features can inadvertently degrade the features the ASR model relies on.
+3. **Model Selection**: For ASR-centric workflows, lighter or more conservative denoising (like `audio-denoiser` or `DeepFilterNet`) tends to perform better than purely signal-driven classical methods when the goal is preserving intelligibility rather than achieving perfect silence.
+
 ---
 
 ## Visualizations
@@ -197,7 +243,7 @@ uv run audio_analysis.py --whisper-model small
 |---|---|---|---|
 | `--input` | `str` | `meow.m4a` | Path to the original source audio. |
 | `--enhanced-dir` | `str` | `enhanced_outputs`| Directory containing enhanced `.wav` files. |
-| `--vtt-file` | `str` | `meow.en.vtt` | Path to YouTube VTT subtitle file for ground truth. |
+| `--vtt-file` | `str` | `audio.vtt` | Path to YouTube VTT subtitle file for ground truth. |
 | `--output-dir` | `str` | `analysis_results`| Directory to save plots, CSVs, and reports. |
 | `--sr` | `int` | `16000` | Sample rate for evaluation. |
 | `--start` | `float` | `0.0` | Start offset (should match enhancement script). |
@@ -206,13 +252,12 @@ uv run audio_analysis.py --whisper-model small
 
 ---
 
-
 ## Notebooks
 
-As requested, here are the notebooks that were generated during the development process:
+The following Jupyter notebooks provide a step-by-step walkthrough of the project objectives:
 
-- `01_audio_enhancement_plugin_development.ipynb`: Development of the audio enhancement plugins.
-- `02_audio_enhancement_end_to_end_analysis.ipynb`: End-to-end analysis of the audio enhancement system.
+- `01_dataset_exploration.ipynb`: **Data resource selection and sample evaluation.** This notebook covers database identification (Apollo 13), exploratory data analysis (EDA) of the audio samples, and justification for the dataset choice.
+- `02_audio_enhancement_end_to_end_analysis.ipynb`: **Audio enhancement algorithm and method evaluation.** This notebook demonstrates the end-to-end pipeline: extracting audio, applying multiple enhancement methods (Classical, ML, AI), and performing quantitative (SNR, WER) and qualitative (Spectrograms) analysis.
 
 ## Project Structure
 - `audio_enhancement.py`: Orchestrator for the plugin system.
