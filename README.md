@@ -184,18 +184,7 @@ The following results compare the methods against the original noisy audio (`25.
 | **Meta DNS64** | 81.62 | **+56.33** | +11.91 |
 | **audio-denoiser** | 31.04 | +5.75 | +5.69 |
 
-### 2. ASR Performance (Whisper `base`)
-| Method | Word Count | WER (%) |
-|---|---|---|
-| **Ground Truth** | ~400 | - |
-| **Original (Noisy)**| 408 | **34.09%** |
-| **Wiener** | 392 | 48.99% |
-| **Spectral Gate** | 387 | 46.72% |
-| **Meta Denoise** | 360 | 37.88% |
-| **audio-denoiser** | 419 | 36.62% |
-| **DeepFilterNet3** | 425 | 35.80% |
-
-### 3. Detailed ASR Comparison Report
+### 2. Detailed ASR Comparison Report
 A comprehensive report is automatically generated at `analysis_results/asr_comparison.txt`. This report includes detailed metrics, Word Error Rate (WER) scores, processing times, and transcription excerpts for all methods.
 
 #### Summary Table (from `asr_comparison.txt`)
