@@ -1,0 +1,7 @@
+Method,Global SNR (dB),Segmental SNR (dB),Global Improvement (dB),Segmental Improvement (dB),Speech Frames (%),RMS,Peak
+Original (Noisy),25.29,23.09,0.0,0.0,30.0,0.1274,0.98
+Wiener,26.13,21.34,0.84,-1.76,30.0,0.1074,0.98
+Spectral Gate,76.71,35.0,51.43,11.91,30.0,0.0736,0.98
+Nmf,33.93,30.49,8.64,7.39,30.0,0.0846,0.98
+Meta Denoise,81.62,35.0,56.33,11.91,30.0,0.132,0.98
+Audio Denoiser,31.04,28.78,5.75,5.69,30.0,0.0834,0.98

@@ -1,0 +1,83 @@
+================================================================================
+WHISPER ASR — BEFORE vs. AFTER ENHANCEMENT COMPARISON
+================================================================================
+
+Whisper model: base
+Ground Truth baseline: meow.en.vtt [0.0s - 180.0s]
+
+Method                                 Words   Δ Words    Time (s)     WER (%)
+--------------------------------------------------------------------------------
+Original (Noisy)                         408        +0        14.5      34.09%
+Wiener                                   392       -16        19.3      48.99%
+Spectral Gate                            387       -21        23.7      46.72%
+Nmf                                      392       -16        29.3      92.17%
+Meta Denoise                             360       -48        11.4      37.88%
+Audio Denoiser                           419       +11        12.0      36.62%
+
+
+================================================================================
+TRANSCRIPTION EXCERPTS (first ~500 chars)
+================================================================================
+
+--- GROUND TRUTH ---
+this is the crew of Apollo 13 wish everybody there a nice evening and uh to
+close out our inection of Aquarius and get back for a pleasant evening and
+odyssey good night thank you 13 okay flight uh you read his uh pitch and ya on
+his High Gain meter that's and now you want roll right to 060 I might as well do
+that and we'll try and get Comet Bennett I'd still like a verification in the
+docking angle because that's what we'll be using for computations of all
+alignments and everything else uh let'…
+
+--- Original (Noisy) ---
+This is the two of the model 13, which is really there. Nice evening and the
+only thing close on our inspection of it, is that you're back from the city
+meeting at Odyssey. Thank you, 13. Okay, flight. Your red is pitching you on. Is
+high gain meter. That's affirmative. And you want roll right to 060. I might as
+well do that. And we'll try and get combat Bennett. I'd still like a
+verification in the docking angle, because that's what we'll be using for
+computations, all the linements and everyth…
+
+--- Wiener ---
+this is the brown effect it almost is I see a name that therigid blows on things
+that summarize that come back a pleasure to eat that autonomy I'm hanging there
+dude Okay, right. You're ready as the pitching on and attacking me. That's
+permacation and you want roll right to 0.6.0. No, I might as well do that. And
+we're trying to come up with Bennett. I still like the verification of the
+docking angles because that's what we'll be using for the computations. We'll
+align them up for everything els…
+
+--- Spectral Gate ---
+This is the dev AHRAS Foundation. It was nice. It was accommodate, and I already
+closed on our next level kits quest, but let's make it louder. Thank you there,
+guys. Okay, but you read is a kitchen yarn is hanging here. That's for the tip
+and then you want to roll right to 060. I might as well do that and we'll try
+and become a tenant. It's still like a verification, docking angle because
+that's what we'll be using for computation online months and everything else.
+Let's see if there's anything…
+
+--- Nmf ---
+If you are taking notion of Philip's Seductive Council, what I thought to you
+was you did not built a drivers dealership that you make was attrippen Thank you
+very much Okay, so it's, you know, there's a, you know, there's an annual
+resigning here, so it's a little bit new. So I'm going to do a little time with
+Cali-Soviet, but still I just have a patient that's working out, because that's
+what I'm using, so I'm going to talk to you about my mental area. So let's see
+if there's any health, where…
+
+--- Meta Denoise ---
+Okay, flight. Your red is pitching you on. Is high gain meter. That's
+affirmative. And you want roll right to 060. I might as well do that. And we'll
+try and get comments about it. I'd still like a verification and a docking angle
+because that's what we'll be using for computation for alignments and everything
+else. Let's see if there's anything else. Like, go ahead, he comment. Okay,
+let's terminate the battery B charge at 55 plus 50. Okay. And at that same time,
+I'd sure like to have a crowd t…
+
+--- Audio Denoiser ---
+This is the two of the model 13 which everyone in there are. Nice evening at the
+moment we close out our inspection of a previous and get back. So, plus we may
+not notice. Tonight. Thank you, there, David. Okay, flight. Your red is pitching
+you on. Is high gain meter. That's affirmative. And you want roll right to 060.
+No, I might as well do that. And we'll try and get the comet to fit it. I'd
+still like a verification and a docking angle because that's what we'll be using
+for computations of al…
